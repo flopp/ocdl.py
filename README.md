@@ -4,6 +4,13 @@ ocdl.py
 Python script for downloading opencaching.de's "saved queries"
 
 
+Author
+------
+Flopp <mail@flopp-caching.de>
+
+Usage
+-----
+
     Usage: ocdl.py [options] [ID...]
     
     Options:
@@ -37,3 +44,7 @@ where username and password are your login credentials for opencaching.de
 
 Moreover, ocdl.py stores the login cookie 'cookies.txt' in the selected  
 config directory for future logins.
+
+License
+-------
+Licensed under GPL Version 3
