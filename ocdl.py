@@ -1,4 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+# The first line selects the python interpreter:
+# For unix-like systems (Linux, BSD, Mac OSX, ...), a reasonable first line is
+# "#!/usr/bin/env python"
+# For windows - if the python interpreter is installed in C:\Python27 - the 
+# first line could be
+# "#!C:\Python27\python.exe"
 
 #
 # Copyright: Flopp <mail@flopp-caching.de>
@@ -28,7 +35,20 @@ import sys
 from optparse import OptionParser, OptionGroup, OptionValueError
 from datetime import date
 
-OCDLPY_VERSION="ocdl.py v0.1 2012-06-13"
+OCDLPY_VERSION="ocdl.py v0.2 2012-10-26"
+
+def create_directory( d ) :
+	if not os.path.isdir( d ) :
+		if options.be_verbose :
+			print "  -- dir '%s' does not exist" % (d)
+			print "  -- trying to create dir '%s'" % (d)
+		
+		try :
+			os.makedirs( d )
+		except OSError, e :
+			print "ERROR: cannot create dir '%s'" % (d)
+			print "  -- ", e
+			raise Exception
 
 def naming_style_callback( option, opt_str, value, parser ) :
 	if not value in [ "ID", "ID+DATE", "NAME", "NAME+DATE" ] :
@@ -39,6 +59,12 @@ additional_help="""
 ocdl.py logs in to opencaching.de using login credentials which are stored |
 | in '~/.ocdl/config.txt' (the actual directory is configurable using the   |
 | '--configdir' command line option).                                       |
+|                                                                           |
+| You can use the command line option '--setup' to create the configuration |
+| directory and to initialize the config file with your login credentials.  |
+|                                                                           |
+| Alternatively, you can manually create the configuration directory and    |
+| the config file:                                                          |
 | Make sure the directory '~/.ocdl/' (or whatever you chose by              |
 | '--configdir') exists and contains the file 'config.txt' with the         |
 | following two lines:                                                      |
@@ -48,11 +74,14 @@ ocdl.py logs in to opencaching.de using login credentials which are stored |
 |                                                                           |
 | where username and password are your login credentials for opencaching.de |
 |                                                                           |
+|                                                                           |
 | Moreover, ocdl.py stores the login cookie 'cookies.txt' in the selected   |
 | config directory for future logins.                                       |
 """
 
 parser = OptionParser( usage = "%prog [options] [ID...]", version = OCDLPY_VERSION, epilog = additional_help )
+parser.add_option( "-s", "--setup", action="store_true", dest="perform_setup", default=False, 
+				   help="create the necessary directories; ask the user for login credentials" )
 parser.add_option( "-c", "--configdir", metavar="CONFIGDIR", dest="config_dir", default="~/.ocdl",
                    help="specify directory for config files (cookies, login information); default is '~/.ocdl'" )
 parser.add_option( "-l", "--list", action="store_true", dest="list_only", default=False, 
@@ -73,18 +102,20 @@ urllib2.install_opener( opener )
 
 headers =  {'User-agent' : 'OCDL.py'}
 
-def create_directory( d ) :
-	if not os.path.isdir( d ) :
+
+def store_credentials( filename, login, password ) :
+	try :
+		f = open( filename, "w" )
+		f.write( "OCDE_LOGIN='%s'\n" % (login) )
+		f.write( "OCDE_PASSWORD='%s'\n" % (password) )
+	except IOError, e :
 		if options.be_verbose :
-			print "  -- dir '%s' does not exist" % (d)
-			print "  -- trying to create dir '%s'" % (d)
-		
-		try :
-			os.makedirs( d )
-		except OSError, e :
-			print "ERROR: cannot create dir '%s'" % (d)
+			print "  -- WARNING: unable to write to file '%s'" % (filename)
 			print "  -- ", e
-			raise Exception
+	except Exception, e :
+		if options.be_verbose :
+			print "  -- WARNING: unable to write to file '%s'" % (filename)
+			print "  -- ", e
 
 def load_credentials( filename ) :
 	if not os.path.isfile( filename ) :
@@ -93,7 +124,7 @@ def load_credentials( filename ) :
 			return (None,None)
 	
 	try :
-		f = open( filename,"r" )
+		f = open( filename, "r" )
 		lines = f.readlines()
 		
 		# OCDE_LOGIN='username'
@@ -232,7 +263,7 @@ def get_queries( login, password, cookies_filename ) :
 		
 		return parse_queries( page )
 	else :
-		print "ERROR: login via password failed"
+		print "ERROR: login via password failed. Please re-run 'ocdl.py' in setup mode (command line option '--setup') to re-enter your login and password."
 		raise Exception
 		return None
 
@@ -297,6 +328,35 @@ try :
 	create_directory( config_dir )
 	
 	(login,password) = load_credentials( config_dir + "/config.txt" )
+	
+	if options.perform_setup :
+		print "Performing setup."
+		
+		login2 = ""
+		password2 = ""
+		
+		if login != "" :
+			login2 = raw_input( "Enter your username for OC.de [default='%s']: " % (login) )
+			if login2 == "" :
+				login2 = login
+		else :
+			login2 = raw_input( "Enter your username for OC.de: " )
+		
+		if password != "" :
+			password2 = raw_input( "Enter your password for OC.de [default='%s']: " % (password) )
+			if password2 == "" :
+				password2 = password
+		else :
+			password2 = raw_input( "Enter your password for OC.de: " )
+		
+		if login != login2 or password != password2 :
+			login = login2
+			password = password2
+			store_credentials( config_dir + "/config.txt", login, password )
+		
+		print "Setup done. You may re-run 'ocdl.py' in normal mode."
+		sys.exit( 0 )
+	
 	cookies_filename=config_dir + "/cookies.txt"
 	
 	QUERIES = get_queries( login, password, cookies_filename )
