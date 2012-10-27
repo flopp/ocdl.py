@@ -3,10 +3,6 @@ ocdl.py
 
 Python script for downloading opencaching.de's "saved queries"
 
-The script is configured to run on unix-like systems. If you want to run it on
-a Windows system, make sure the first line of the script reflects the location
-of the python interpreter (see the header comment of 'ocdl.py' for instructions).
-
 Author
 ------
 Flopp <mail@flopp-caching.de>

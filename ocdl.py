@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-# The first line selects the python interpreter:
-# For unix-like systems (Linux, BSD, Mac OSX, ...), a reasonable first line is
-# "#!/usr/bin/env python"
-# For windows - if the python interpreter is installed in C:\Python27 - the 
-# first line could be
-# "#!C:\Python27\python.exe"
-
 #
 # Copyright: Flopp <mail@flopp-caching.de>
 #
