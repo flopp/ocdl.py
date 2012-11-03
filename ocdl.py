@@ -29,7 +29,7 @@ import sys
 from optparse import OptionParser, OptionGroup, OptionValueError
 from datetime import date
 
-OCDLPY_VERSION="ocdl.py v0.3 2012-10-30"
+OCDLPY_VERSION="ocdl.py v0.3a 2012-11-03"
 
 def create_directory( d ) :
 	if not os.path.isdir( d ) :
@@ -39,7 +39,7 @@ def create_directory( d ) :
 			
 		try :
 			os.makedirs( d )
-		except ( OSError, e ):
+		except OSError as e:
 			print ( "ERROR: cannot create dir '%s'" % (d) )
 			print ( "  -- ", e )
 			raise Exception
@@ -102,11 +102,11 @@ def store_credentials( filename, login, password ) :
 		f = open( filename, "w" )
 		f.write( "OCDE_LOGIN='%s'\n" % (login.encode('utf-8')) )
 		f.write( "OCDE_PASSWORD='%s'\n" % (password.encode('utf-8')) )
-	except ( IOError, e ):
+	except IOError as e:
 		if options.be_verbose :
 			print ( "  -- WARNING: unable to write to file '%s'" % (filename) )
 			print ( "  -- ", e )
-	except ( Exception, e ):
+	except Exception as e:
 		if options.be_verbose :
 			print ( "  -- WARNING: unable to write to file '%s'" % (filename) )
 			print ( "  -- ", e )
@@ -166,12 +166,12 @@ def load_credentials( filename ) :
 		
 		return (login.decode('utf-8'), password.decode('utf-8'))
 		
-	except ( IOError, e ):
+	except IOError as e:
 		if options.be_verbose :
 			print ( "  -- WARNING: unable to parse file '%s'" % (filename) )
 			print ( "  -- ", e )
 		return (None,None)
-	except ( Exception, e ):
+	except Exception as e:
 		if options.be_verbose :
 			print ( "  -- WARNING: unable to parse file '%s'" % (filename) )
 			print ( "  -- ", e )
@@ -203,7 +203,7 @@ def get_queries( login, password, cookies_filename ) :
 			try :
 				req = urllib2.Request( url, data, headers )
 				handle = urllib2.urlopen( req )
-			except ( IOError, e ):
+			except IOError as e:
 				print ( "  -- failed to open '%s'" % url )
 				print ( "  --", e )
 				return None 
@@ -216,7 +216,7 @@ def get_queries( login, password, cookies_filename ) :
 				if options.be_verbose :
 					print ( "  -- login via cookies failed" )
 				cookie_jar.clear()
-		except ( cookielib.LoadError, e ):
+		except cookielib.LoadError as e:
 			print ( "  -- WARNING: failed to load cookies from '%s'" % cookies_filename )
 			print ( "  --", e )
 		 
@@ -224,7 +224,7 @@ def get_queries( login, password, cookies_filename ) :
 		print ( "  -- trying login via password" )
 	
 	if login is None or password is None :
-		print ( "ERROR: username and/or password not specified" )
+		print ( "ERROR: username and/or password not specified. Please re-run 'ocdl.py' in setup mode (command line option '--setup') to re-enter your login and password." )
 		raise Exception
 		return None
 		 
@@ -237,7 +237,7 @@ def get_queries( login, password, cookies_filename ) :
 	try:
 		req = urllib2.Request( url, data, headers )
 		handle = urllib2.urlopen( req )
-	except ( IOError, e ):
+	except IOError as e:
 		print ( "ERROR: failed to open '%s'" % login_url )
 		print ( "  -- ", e )
 		raise Exception
@@ -251,7 +251,7 @@ def get_queries( login, password, cookies_filename ) :
 		
 		try :
 			cookie_jar.save( cookies_filename );
-		except ( IOError, e ):
+		except IOError as e:
 			print ( "  -- WARNING: failed to store cookies in '%s'" % cookies_filename )
 			print ( "  --", e )
 		
@@ -301,13 +301,13 @@ def download_query( index, name, naming_style, target_dir ) :
 		local_file.close()
 
 	#handle errors
-	except ( urllib2.HTTPError, e ):
+	except urllib2.HTTPError as e:
 		print ( "  -- WARNING: failed to download '%s'" % url )
 		print ( "  --", e )
-	except ( urllib2.URLError, e ):
+	except urllib2.URLError as e:
 		print ( "  -- WARNING: failed to download '%s'" % url )
 		print ( "  --", e )
-	except ( IOError, e ):
+	except IOError as e:
 		print ( "  -- WARNING: failed to download '%s' to file '%s'" % ( url, target ) )
 		print ( "  --", e )
 
@@ -350,7 +350,7 @@ try :
 		print ( "Removing old cookies" );
 		try :
 			os.remove( config_dir + "/cookies.txt" )
-		except ( Exception ):
+		except Exception:
 			print ( "cookie-file not found" )
 		print ( "Setup done. You may re-run 'ocdl.py' in normal mode." )
 		sys.exit( 0 )
