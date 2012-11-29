@@ -296,7 +296,7 @@ def download_query( index, name, naming_style, target_dir ) :
 			print ( "  -- downloading " + url )
 		handle = urllib2.urlopen( req )
 
-		local_file = open( target, "w" )
+		local_file = open( target, "wb" )
 		local_file.write( handle.read() )
 		local_file.close()
 
