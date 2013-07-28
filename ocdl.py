@@ -208,7 +208,7 @@ def get_queries( login, password, cookies_filename ) :
 				print ( "  --", e )
 				return None 
 			page = handle.read()
-			if 'resource2/ocstyle/images/misc/32x32-searchresults.png' in page :
+			if 'resource2/ocstyle/images/misc/32x32-search.png' in page :
 				if options.be_verbose :
 					print ( "  -- login via cookies successful" )
 				return parse_queries( page )
@@ -244,7 +244,8 @@ def get_queries( login, password, cookies_filename ) :
 		return None
 	
 	page = handle.read()
-	if 'resource2/ocstyle/images/misc/32x32-searchresults.png' in page :
+	
+	if 'resource2/ocstyle/images/misc/32x32-search.png' in page :
 		if options.be_verbose :
 			print ( "  -- login via password successful" )
 			print ( "  -- storing cookies in '%s'" % cookies_filename )
